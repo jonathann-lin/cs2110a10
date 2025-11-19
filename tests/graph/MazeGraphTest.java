@@ -602,7 +602,6 @@ public class MazeGraphTest {
         assertEquals(7, vertices.size());
 
 
-        assertEquals(7, vertices.size());
         IPair p00 = new IPair(0, 0);
         IPair p01 = new IPair(0, 1);
         IPair p02 = new IPair(0, 2);
@@ -765,5 +764,99 @@ public class MazeGraphTest {
                 e03_down.weight());
 
     }
+    @DisplayName("WHEN a GameMap contains four isolated vertices in a box, THEN the edges are connected properly.")
+    @Test
+    void testBox() {
+        GameMap map = createMap("""
+                wwww
+                wppw
+                wppw
+                wwww""");
+        MazeGraph graph = new MazeGraph(map);
+        Map<IPair, MazeVertex> vertices = new HashMap<>();
+        graph.vertices().forEach(v -> vertices.put(v.loc(), v));
+
+        assertEquals(4, vertices.size());
+
+        IPair p11 = new IPair(1, 1);
+        IPair p21 = new IPair(2, 1);
+        IPair p12 = new IPair(1, 2);
+        IPair p22 = new IPair(2, 2);
+
+        assertTrue(vertices.containsKey(p11));
+        assertTrue(vertices.containsKey(p21));
+        assertTrue(vertices.containsKey(p12));
+        assertTrue(vertices.containsKey(p22));
+
+        MazeVertex v11 = vertices.get(p11);
+        MazeVertex v21 = vertices.get(p21);
+        MazeVertex v12 = vertices.get(p12);
+        MazeVertex v22 = vertices.get(p22);
+
+        // --- v11 ---
+        MazeEdge e11_right = v11.edgeInDirection(Direction.RIGHT);
+        assertNotNull(e11_right);
+        assertEquals(v11, e11_right.tail());
+        assertEquals(v21, e11_right.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[1][1], map.elevations()[2][1]), e11_right.weight());
+
+        MazeEdge e11_down = v11.edgeInDirection(Direction.DOWN);
+        assertNotNull(e11_down);
+        assertEquals(v11, e11_down.tail());
+        assertEquals(v12, e11_down.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[1][1], map.elevations()[1][2]), e11_down.weight());
+
+        assertNull(v11.edgeInDirection(Direction.LEFT));
+        assertNull(v11.edgeInDirection(Direction.UP));
+
+        // --- v21 ---
+        MazeEdge e21_left = v21.edgeInDirection(Direction.LEFT);
+        assertNotNull(e21_left);
+        assertEquals(v21, e21_left.tail());
+        assertEquals(v11, e21_left.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[2][1], map.elevations()[1][1]), e21_left.weight());
+
+        MazeEdge e21_down = v21.edgeInDirection(Direction.DOWN);
+        assertNotNull(e21_down);
+        assertEquals(v21, e21_down.tail());
+        assertEquals(v22, e21_down.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[2][1], map.elevations()[2][2]), e21_down.weight());
+
+        assertNull(v21.edgeInDirection(Direction.RIGHT));
+        assertNull(v21.edgeInDirection(Direction.UP));
+
+        // --- v12 ---
+        MazeEdge e12_up = v12.edgeInDirection(Direction.UP);
+        assertNotNull(e12_up);
+        assertEquals(v12, e12_up.tail());
+        assertEquals(v11, e12_up.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[1][2], map.elevations()[1][1]), e12_up.weight());
+
+        MazeEdge e12_right = v12.edgeInDirection(Direction.RIGHT);
+        assertNotNull(e12_right);
+        assertEquals(v12, e12_right.tail());
+        assertEquals(v22, e12_right.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[1][2], map.elevations()[2][2]), e12_right.weight());
+
+        assertNull(v12.edgeInDirection(Direction.LEFT));
+        assertNull(v12.edgeInDirection(Direction.DOWN));
+
+        // --- v22 ---
+        MazeEdge e22_up = v22.edgeInDirection(Direction.UP);
+        assertNotNull(e22_up);
+        assertEquals(v22, e22_up.tail());
+        assertEquals(v21, e22_up.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[2][2], map.elevations()[2][1]), e22_up.weight());
+
+        MazeEdge e22_left = v22.edgeInDirection(Direction.LEFT);
+        assertNotNull(e22_left);
+        assertEquals(v22, e22_left.tail());
+        assertEquals(v12, e22_left.head());
+        assertEquals(MazeGraph.edgeWeight(map.elevations()[2][2], map.elevations()[1][2]), e22_left.weight());
+
+        assertNull(v22.edgeInDirection(Direction.RIGHT));
+        assertNull(v22.edgeInDirection(Direction.DOWN));
+    }
 }
+
 
