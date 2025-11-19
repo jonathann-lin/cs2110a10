@@ -202,7 +202,7 @@ public class MazeGraph {
                 //Check if neighbor vertex exists already, add it if it is not
                 IPair newPair = new IPair(newI, newJ);
                 MazeVertex neighborV;
-                if(vertices.containsKey(newPair)){
+                if(discovered.contains(newPair)){
                     neighborV = vertices.get(newPair);
                 }
                 else{
