@@ -600,6 +600,9 @@ public class MazeGraphTest {
         graph.vertices().forEach(v -> vertices.put(v.loc(), v));
 
         assertEquals(7, vertices.size());
+
+
+        assertEquals(7, vertices.size());
         IPair p00 = new IPair(0, 0);
         IPair p01 = new IPair(0, 1);
         IPair p02 = new IPair(0, 2);
