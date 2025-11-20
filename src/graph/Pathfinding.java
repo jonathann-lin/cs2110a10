@@ -87,8 +87,6 @@ public class Pathfinding {
      */
     static <V, E extends WeightedEdge<V>> List<E> pathTo(Map<V, PathEnd<E>> pathInfo, V src,
             V dst) {
-        // TODO 4b: Complete this implementation of this method according to its specification.
-
         List<E> ret = new ArrayList<>();
 
         V currentV = dst;
