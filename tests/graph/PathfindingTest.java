@@ -15,11 +15,6 @@ import static graph.SimpleGraph.*;
  */
 public class PathfindingTest {
 
-    // TODO 5: Complete the definition of the empty test cases so that they match their
-    //  `@DisplayName` descriptions. We have provided two complete test cases as examples, as
-    //   well as some helper methods for constructing graphs and checking paths that will likely
-    //   be useful.
-
     /*
      * Text graph format ([weight] is optional):
      * Directed edge: tailLabel -> headLabel [weight]
@@ -174,7 +169,6 @@ public class PathfindingTest {
         @DisplayName("In a graph where some shortest non-backtracking path includes at least 3 edges.")
         @Test
         void testLongerPaths() {
-            // TODO 5c: Complete this test case
             SimpleGraph g = SimpleGraph.fromText("""
             A -- B 2
             A -- C 6
@@ -253,20 +247,49 @@ public class PathfindingTest {
                     g.getVertex("G"), null);
             assertNotNull(path);
             assertPathVertices(Arrays.asList("A", "C", "E", "F", "G"), path);
+
+
         }
 
         @DisplayName("When the shortest non-backtracking path consists of a single edge.")
         @Test
         void testOneEdgePath() {
-            // TODO 5d: Complete this test case
-            fail("Testcase has not been implemented");
+            SimpleGraph g = SimpleGraph.fromText("""
+            A -- B 2
+            A -- C 6
+            B -> C 3
+            B -- D 1
+            D -- E 1
+            """);
+            SimpleVertex va = g.getVertex("A");
+            SimpleVertex vb = g.getVertex("B");
+            SimpleVertex vc = g.getVertex("C");
+
+            /**
+             * Normally, going from A to C is 5 long, (A->B->C), but if (B->A) is the previous edge,
+             * then it cannot backtrack and go A->B, so it must go A->C, which is a longer path
+             */
+            List<SimpleEdge> path = Pathfinding.shortestNonBacktrackingPath(va,
+                    vc, g.getEdge(vb, va));
+            assertNotNull(path);
+            assertPathVertices(Arrays.asList("A", "C"), path);
         }
 
         @DisplayName("Path is empty when `src` and `dst` are the same.")
         @Test
         void testEmptyPath() {
-            // TODO 5e: Complete this test case
-            fail("Testcase has not been implemented");
+            SimpleGraph g = SimpleGraph.fromText(graph2);
+            List<SimpleEdge> path = Pathfinding.shortestNonBacktrackingPath(g.getVertex("G"),
+                    g.getVertex("G"), g.getEdge(g.getVertex("D"),
+                            g.getVertex("G")) );
+            assertNotNull(path);
+            assertTrue(path.isEmpty());
+
+            path = Pathfinding.shortestNonBacktrackingPath(g.getVertex("G"),
+                    g.getVertex("G"), null);
+            assertNotNull(path);
+            assertTrue(path.isEmpty());
+            //Does check to make sure that this holds true regardless of any previous edge
         }
 
         @DisplayName("Path is null when there is not a path from `src` to `dst` (even without "
@@ -283,16 +306,60 @@ public class PathfindingTest {
                 + "from `src` to `dst`.")
         @Test
         void testNonBacktrackingPreventsPath() {
-            // TODO 5f: Complete this test case
-            fail("Testcase has not been implemented");
+            SimpleGraph g = SimpleGraph.fromText("""
+            A -- B 2
+            A -- C 6
+            B -> C 3
+            B -- D 1
+            D -- E 1
+            """);
+
+            //Only path from A->B is directly, but without backtracking, there is no valid path
+            List<SimpleEdge> path = Pathfinding.shortestNonBacktrackingPath(g.getVertex("A"),
+                    g.getVertex("B"), g.getEdge(g.getVertex("B"), g.getVertex("A")));
+            assertNull(path);
+
+            //Included as sanity check to make sure that it is the no-backtracking condition that
+            //prevents a valid path
+            List<SimpleEdge> path1 = Pathfinding.shortestNonBacktrackingPath(g.getVertex("A"),
+                    g.getVertex("B"),null);
+            assertNotNull(path1);
         }
 
         @DisplayName("When the graph includes multiple shortest paths from `src` to `dst`, one of "
                 + "them is returned")
         @Test
         void testMultipleShortestPaths() {
-            // TODO 5g: Complete this test case
-            fail("Testcase has not been implemented");
+            SimpleGraph g = SimpleGraph.fromText("""
+            A -> B 2
+            B -> C 6
+            A -> D 3
+            D -> C 5
+            A -> C 8
+            """);
+
+            List<SimpleEdge> path = Pathfinding.shortestNonBacktrackingPath(g.getVertex("A"),
+                    g.getVertex("C"), null );
+            assertNotNull(path);
+            assertPathVertices(Arrays.asList("A", "C"), path);
+
+            List<List<String>> valid = Arrays.asList(
+                            Arrays.asList("A", "C"),
+                            Arrays.asList("A", "B", "C"),
+                            Arrays.asList("A", "D", "C")
+                    );
+            boolean matched = false;
+            for (List<String> candidate : valid) {
+                try {
+                    assertPathVertices(candidate, path);
+                    matched = true;
+                    break;
+                } catch (AssertionError aError) {
+                    //ignore failures
+                }
+            }
+            assertTrue(matched);
+
         }
     }
 
