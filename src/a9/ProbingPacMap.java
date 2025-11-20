@@ -59,6 +59,8 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
      */
     private int size;
 
+    private int tombstoneNum;
+
     /**
      * Create a new empty `ProbingPacMap`.
      */
@@ -66,6 +68,7 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
     public ProbingPacMap() {
         entries = new Entry[INITIAL_CAPACITY];
         size = 0;
+        tombstoneNum = 0;
     }
 
     /**
@@ -80,7 +83,7 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
      * Returns the current load factor of the hash table backing this map. Runs in O(1) time.
      */
     private double loadFactor() {
-        return (double) size / entries.length;
+        return (double) (size+tombstoneNum) / entries.length;
     }
 
 
@@ -101,15 +104,13 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
 
     private void resize() {
         Entry<K, V>[] newEntries = (Entry<K, V>[]) new Entry[entries.length * 2];
-        int newSize = 0;
         Iterator<K> it = this.iterator();
         while (it.hasNext()) {
             Entry<K, V> e = entries[findEntry(it.next())];
             newEntries[findFreeIndex(e.key, newEntries)] = e;
-            newSize++;
         }
         entries = newEntries;
-        size = newSize;
+        tombstoneNum = 0;
         assertInv();
     }
 
@@ -157,9 +158,17 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
     @Override
     public void put(K key, V value) {
         int index = findEntry(key);
-        if (entries[index] == null){ //only increment size if it fills an empty slot, otherwise we overwrite a tombstone or existing entry
+        if (entries[index] == TOMBSTONE){
+            tombstoneNum --;
             size ++;
         }
+        else if(entries[index] == null){
+            size ++;
+        }
+        else{ //replacing an existing thing, so change nothing
+
+        }
+
         entries[index] = new Entry<>(key, value);
         if (loadFactor() > MAX_LOAD_FACTOR) {
             resize();
@@ -188,7 +197,11 @@ public class ProbingPacMap<K, V> implements PacMap<K, V> {
         }
         V value = entries[findEntry(key)].value();
         entries[findEntry(key)] = TOMBSTONE;
+        size--;
+        tombstoneNum++;
+
         assertInv();
+
 
         return value;
 
